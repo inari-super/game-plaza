@@ -174,7 +174,8 @@ function twStart(){if(TW){clearInterval(TW.id);TW=null}const els=[...app.querySe
  const done=()=>{if(TW){clearInterval(TW.id);TW=null}els.forEach((e,k)=>e.textContent=full[k])};
  TW={id:setInterval(()=>{if(ei>=els.length){done();return}ci++;const f=full[ei];els[ei].textContent=f.slice(0,ci);const ch=f[ci-1];if(ch&&!speaking()&&!/\s|[、。，．,.…「」『』（）()]/.test(ch)&&ci%2===0)seBlip(who);if(ci>=f.length){ei++;ci=0}},34),done};
  app.querySelectorAll(".win").forEach(w=>w.addEventListener("pointerdown",()=>{if(TW)TW.done()},{once:false}))}
-function tw(txt,cls){return '<div class="msg tw '+(cls||"")+'" data-t="'+esc(txt)+'"></div>'}
+let SEEN={};
+function tw(txt,cls,instant){if(instant)return '<div class="msg '+(cls||'')+'">'+esc(txt)+'</div>';return '<div class="msg tw '+(cls||"")+'" data-t="'+esc(txt)+'"></div>'}
 function langBtn(){return '<button class="btn" id="lg" style="width:auto;min-height:36px;padding:6px 12px">'+u("lang")+'</button>'}
 function bindLang(){const b=$("#lg");if(b)b.onclick=()=>{S.lang=S.lang==="ja"?"en":"ja";save();render()}}
 function sndBar(){return '<div class="snd"><button class="btn" id="sb">'+u("bgm")+' '+(S.bgm?u("on"):u("off"))+'</button><button class="btn" id="ss">'+u("se")+' '+(S.se?u("on"):u("off"))+'</button>'+(S.lang==='en'?'<button class="btn" id="sv">Voice '+(S.voice?u("on"):u("off"))+'</button>':'')+'</div>'}
@@ -197,18 +198,18 @@ function render(){document.documentElement.lang=S.lang;({title:rTitle,hub:rHub,t
 function heroRow(){return '<div class="heroes">'+["inari","hachiman","tenjin","amate","minakata"].map(k=>'<figure>'+himg(k)+t(D.HN[k])+'</figure>').join("")+'</div>'}
 function rTitle(){S.who="inari";mk('<div class="win"><h1>'+esc(u("title"))+'</h1><div class="sub">'+u("sub")+'</div>'+sScene("tokyo")+heroRow()+'</div>'+
  '<button class="btn gold" id="n">'+u("new")+'</button>'+(S.has?'<button class="btn" id="c">'+u("cont")+'</button>':'')+'<button class="btn" id="r">'+u("rec")+'</button><button class="btn" id="h">'+u("help")+'</button><div class="row">'+langBtn()+'</div>'+sndBar()+'<div class="small">'+u("note")+'</div>');
- bindLang();bindSnd();$("#n").onclick=()=>{auResume();seTap();S.i=0;S.read={};S.stars={};S.stamps={};save();S.step="hub";render()};
+ bindLang();bindSnd();$("#n").onclick=()=>{auResume();seTap();S.i=0;S.read={};S.stars={};S.stamps={};SEEN={};save();S.step="hub";render()};
  if($("#c"))$("#c").onclick=()=>{auResume();seTap();S.step="hub";render()};$("#r").onclick=()=>{auResume();S.back="title";S.step="rec";render()};$("#h").onclick=()=>{auResume();S.step="help";render()}}
 function rHelp(){mk('<div class="win msg">'+esc(u("helptxt"))+'</div><button class="btn" id="b">'+u("back")+'</button>');$("#b").onclick=()=>{S.step="title";render()}}
-function rHub(){const p=D.P[S.i];const r=S.read[p.id]||{};const all=D.ORDER.every(k=>r[k]);S.who="inari";
- mk(topbar()+'<div class="win">'+sScene(p.id)+'<div style="margin-top:8px"></div>'+tw(t(p.intro))+'<div class="hint">'+u("skip")+'</div></div>'+mapSvg()+'<div class="small" style="padding:0 4px">'+u("hub")+'</div>'+
+function rHub(){const p=D.P[S.i];const r=S.read[p.id]||{};const all=D.ORDER.every(k=>r[k]);S.who="inari";const first=!SEEN['i'+p.id];SEEN['i'+p.id]=1;
+ mk(topbar()+'<div class="win">'+sScene(p.id)+'<div style="margin-top:8px"></div>'+tw(t(p.intro),'',!first)+(first?'<div class="hint">'+u("skip")+'</div>':'')+'</div>'+mapSvg()+'<div class="small" style="padding:0 4px">'+u("hub")+'</div>'+
  D.ORDER.map(k=>'<button class="btn" data-k="'+k+'">'+sIcon(KICON[k],32)+'<span>'+u(k)+'<small>'+esc(t(p.topics[k].title))+'</small></span><span class="st">'+(r[k]?'✓':'')+'</span></button>').join("")+
  '<button class="btn gold" id="q"'+(all?'':' disabled')+'>'+(all?u("quiz"):u("quizlock"))+'</button><div class="row"><button class="btn" id="t">'+u("back")+'</button>'+langBtn()+'</div>'+sndBar());
  bindLang();bindSnd();app.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{seTap();S.k=b.dataset.k;S.step="topic";render()});
  $("#q").onclick=()=>{if(!all)return;seGo();const ks=SIX.slice().sort(()=>Math.random()-.5).slice(0,3);S.q=ks;S.qi=0;S.right=0;S.step="quiz";render()};
  $("#t").onclick=()=>{S.step="title";render()}}
-function rTopic(){const p=D.P[S.i],k=S.k,c=p.topics[k];(S.read[p.id]=S.read[p.id]||{})[k]=1;save();const sp=D.SPEAK[k];S.who=sp;
- mk(topbar()+'<div class="win"><div class="who">'+himg(sp)+'<div><div class="nm">'+t(D.HN[sp])+'</div><div class="small">'+u(k)+'</div></div><div style="margin-left:auto">'+sIcon(KICON[k],56)+'</div></div><div style="color:var(--gold);margin:8px 0">'+esc(t(c.title))+'</div>'+tw(t(c.text))+'<div class="hint">'+u("skip")+'</div><div class="src">'+tagH(c.tag)+u("src")+': '+esc(c.s)+'</div></div><button class="btn gold" id="b">'+u("back")+'</button>');
+function rTopic(){const p=D.P[S.i],k=S.k,c=p.topics[k];const again=!!(S.read[p.id]&&S.read[p.id][k]);(S.read[p.id]=S.read[p.id]||{})[k]=1;save();const sp=D.SPEAK[k];S.who=sp;
+ mk(topbar()+'<div class="win"><div class="who">'+himg(sp)+'<div><div class="nm">'+t(D.HN[sp])+'</div><div class="small">'+u(k)+'</div></div><div style="margin-left:auto">'+sIcon(KICON[k],56)+'</div></div><div style="color:var(--gold);margin:8px 0">'+esc(t(c.title))+'</div>'+tw(t(c.text),'',again)+(again?'':'<div class="hint">'+u("skip")+'</div>')+'<div class="src">'+tagH(c.tag)+u("src")+': '+esc(c.s)+'</div></div><button class="btn gold" id="b">'+u("back")+'</button>');
  $("#b").onclick=()=>{seTap();S.step="hub";render()}}
 function rQuiz(){const p=D.P[S.i],k=S.q[S.qi],c=p.topics[k];S.who="tenjin";
  mk(topbar()+'<div class="win"><div class="who">'+himg("tenjin")+'<div class="small">Q'+(S.qi+1)+'/3 ・ '+u(k)+'</div><div style="margin-left:auto">'+sIcon(KICON[k],40)+'</div></div>'+tw(t(c.q))+'</div>'+c.c.map((o,j)=>'<button class="btn" data-j="'+j+'">'+esc(t(o))+'</button>').join(""));
