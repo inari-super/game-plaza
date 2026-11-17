@@ -372,6 +372,10 @@ function rRec(){let h='<div class="win"><div class="nm">'+u("rec")+'</div>'+D.P.
  $("#x").onclick=()=>{if(!S.sure){S.sure=true;render();return}try{localStorage.removeItem(KEY)}catch(e){}S.sure=false;S.has=false;S.i=0;S.read={};S.stars={};S.stamps={};S.step="title";render()};
  $("#b").onclick=()=>{S.step=S.back||"title";render()}}
 /* 最初のタップで音を有効にする（ブラウザの決まり） */
-document.addEventListener("pointerdown",()=>{if(!AU.ctx){auResume();bgmFor()}else if(AU.ctx.state==="suspended")AU.ctx.resume()},{passive:true});
+function auUnlock(){try{if(!AU.ctx){auResume();bgmFor()}else if(AU.ctx.state!=="running"){AU.ctx.resume()}
+ if(AU.ctx){const b=AU.ctx.createBuffer(1,1,22050),o=AU.ctx.createBufferSource();o.buffer=b;o.connect(AU.ctx.destination);o.start(0);
+  if(AU.ctx.state==="running"&&!AU.timer&&AU.bgm)bgmFor()}}catch(e){}}
+["pointerdown","touchend","click","keydown"].forEach(ev=>document.addEventListener(ev,auUnlock,{passive:true}));
+document.addEventListener("visibilitychange",()=>{try{if(!document.hidden&&AU.ctx&&AU.ctx.state!=="running")AU.ctx.resume()}catch(e){}});
 render();
 </script>
