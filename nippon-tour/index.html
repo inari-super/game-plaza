@@ -154,10 +154,10 @@ function bgmTick(){const c=AU.ctx;if(!c||!AU.tr)return;const tr=AU.tr,eighth=60/
   AU.next+=eighth;AU.step++}}
 function auSet(k,v){AU[k]=v;if(k==="bgm"){if(!v)bgmStop();else if(AU.want)bgmPlay(AU.want)}}
 const D=window.__D;const KEY="nippon-tour-v1";
-let S={lang:(navigator.language||"ja").slice(0,2)==="en"?"en":"ja",step:"title",i:0,read:{},stars:{},stamps:{},q:null,qi:0,right:0,sure:false,has:false,bgm:true,se:true,voice:true};
-try{const o=JSON.parse(localStorage.getItem(KEY)||"null");if(o){S.lang=o.lang||S.lang;S.i=o.i||0;S.read=o.read||{};S.stars=o.stars||{};S.stamps=o.stamps||{};S.has=!!o.has;if(o.bgm===false)S.bgm=false;if(o.se===false)S.se=false;if(o.voice===false)S.voice=false}}catch(e){}
+let S={lang:(navigator.language||"ja").slice(0,2)==="en"?"en":"ja",step:"title",i:0,read:{},stars:{},stamps:{},q:null,qi:0,right:0,sure:false,has:false,bgm:true,se:true,voice:true,voiceName:""};
+try{const o=JSON.parse(localStorage.getItem(KEY)||"null");if(o){S.lang=o.lang||S.lang;S.i=o.i||0;S.read=o.read||{};S.stars=o.stars||{};S.stamps=o.stamps||{};S.has=!!o.has;if(o.bgm===false)S.bgm=false;if(o.se===false)S.se=false;if(o.voice===false)S.voice=false;if(o.voiceName)S.voiceName=o.voiceName}}catch(e){}
 AU.bgm=S.bgm;AU.se=S.se;
-function save(){try{localStorage.setItem(KEY,JSON.stringify({lang:S.lang,i:S.i,read:S.read,stars:S.stars,stamps:S.stamps,has:true,bgm:S.bgm,se:S.se,voice:S.voice}))}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({lang:S.lang,i:S.i,read:S.read,stars:S.stars,stamps:S.stamps,has:true,bgm:S.bgm,se:S.se,voice:S.voice,voiceName:S.voiceName}))}catch(e){}}
 const $=s=>document.querySelector(s);const app=$("#app");
 const t=o=>o[S.lang]||o.ja;const u=k=>t(D.UI[k]);
 const SIX=["cap","shrine","food","gourmet","sake","history"];
@@ -166,9 +166,15 @@ function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;","
 function himg(k){return '<img alt="" src="data:image/png;base64,'+D.H[k]+'">'}
 function mk(h){try{if(window.speechSynthesis)speechSynthesis.cancel()}catch(e){}app.innerHTML=h;twStart()}
 /* 文字送り＋ピー音 */
-let TW=null;let VOICE=null;
+let TW=null;
 function speaking(){return S.lang==='en'&&S.voice&&!!window.speechSynthesis}
-function speak(txt){try{const ss=window.speechSynthesis;if(!ss)return;if(!VOICE){const vs=ss.getVoices();VOICE=vs.find(v=>/^en[-_]US/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang))||null}const u=new SpeechSynthesisUtterance(txt.replace(/\*/g,''));u.lang=VOICE?VOICE.lang:'en-US';if(VOICE)u.voice=VOICE;u.rate=.95;ss.speak(u)}catch(e){}}
+function enVoices(){try{const vs=speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang));const sc=v=>{let n=0;if(/^en[-_]US/i.test(v.lang))n+=3;else if(/^en[-_](GB|AU|IE|CA)/i.test(v.lang))n+=2;
+ if(/natural|neural|premium|enhanced|siri|online/i.test(v.name))n+=6;if(/samantha|ava\b|allison|aria|jenny|emma|guy|daniel|karen|moira|serena|zoe|nicky|google (us|uk)/i.test(v.name))n+=3;if(!v.localService)n+=1;
+ if(/espeak|compact|fred|zarvox|bells|whisper|trinoids|albert|bad news|bahh|boing|bubbles|cellos|deranged|good news|hysterical|jester|organ|superstar|wobble|junior|kathy|ralph|princess/i.test(v.name))n-=10;return n};
+ return vs.map(v=>[sc(v),v]).sort((a,b)=>b[0]-a[0]).map(x=>x[1])}catch(e){return[]}}
+function pickVoice(){const vs=enVoices();if(!vs.length)return null;return (S.voiceName&&vs.find(v=>v.name===S.voiceName))||vs[0]}
+function speak(txt){try{const ss=window.speechSynthesis;if(!ss)return;const v=pickVoice();const parts=txt.replace(/\*/g,'').replace(/\s*\n+\s*/g,'. ').match(/[^.!?]+[.!?]*["')\]]*/g)||[txt];
+ parts.map(p=>p.trim()).filter(Boolean).forEach(p=>{const u=new SpeechSynthesisUtterance(p);u.lang=v?v.lang:'en-US';if(v)u.voice=v;u.rate=.92;u.pitch=1.02;ss.speak(u)})}catch(e){}}
 function twStart(){if(TW){clearInterval(TW.id);TW=null}const els=[...app.querySelectorAll(".tw")];if(!els.length)return;
  const full=els.map(e=>e.dataset.t);if(speaking())speak(full.join(' '));els.forEach(e=>e.textContent="");let ei=0,ci=0;const who=S.who||"inari";
  const done=()=>{if(TW){clearInterval(TW.id);TW=null}els.forEach((e,k)=>e.textContent=full[k])};
@@ -178,10 +184,10 @@ let SEEN={};
 function tw(txt,cls,instant){if(instant)return '<div class="msg '+(cls||'')+'">'+esc(txt)+'</div>';return '<div class="msg tw '+(cls||"")+'" data-t="'+esc(txt)+'"></div>'}
 function langBtn(){return '<button class="btn" id="lg" style="width:auto;min-height:36px;padding:6px 12px">'+u("lang")+'</button>'}
 function bindLang(){const b=$("#lg");if(b)b.onclick=()=>{S.lang=S.lang==="ja"?"en":"ja";save();render()}}
-function sndBar(){return '<div class="snd"><button class="btn" id="sb">'+u("bgm")+' '+(S.bgm?u("on"):u("off"))+'</button><button class="btn" id="ss">'+u("se")+' '+(S.se?u("on"):u("off"))+'</button>'+(S.lang==='en'?'<button class="btn" id="sv">Voice '+(S.voice?u("on"):u("off"))+'</button>':'')+'</div>'}
+function sndBar(){return '<div class="snd"><button class="btn" id="sb">'+u("bgm")+' '+(S.bgm?u("on"):u("off"))+'</button><button class="btn" id="ss">'+u("se")+' '+(S.se?u("on"):u("off"))+'</button>'+(S.lang==='en'?'<button class="btn" id="sv">Voice '+(S.voice?u("on"):u("off"))+'</button>'+(S.voice?'<button class="btn" id="sw">Voice: '+esc((pickVoice()||{name:"default"}).name.replace(/^Microsoft |^Google /,"").slice(0,18))+' ▶</button>':''):'')+'</div>'}
 function bindSnd(){const a=$("#sb"),b=$("#ss");
  if(a)a.onclick=()=>{S.bgm=!S.bgm;auSet("bgm",S.bgm);save();if(S.bgm)bgmFor();render()};
- if(b)b.onclick=()=>{S.se=!S.se;AU.se=S.se;save();render()};const v=$("#sv");if(v)v.onclick=()=>{S.voice=!S.voice;save();render()}}
+ if(b)b.onclick=()=>{S.se=!S.se;AU.se=S.se;save();render()};const v=$("#sv");if(v)v.onclick=()=>{S.voice=!S.voice;save();render()};const w=$("#sw");if(w)w.onclick=()=>{const vs=enVoices().slice(0,6);if(!vs.length)return;const cur=pickVoice();const k=(vs.findIndex(x=>cur&&x.name===cur.name)+1)%vs.length;S.voiceName=vs[k].name;save();try{speechSynthesis.cancel()}catch(e){}speak("Hello! Let's travel around Japan together.");render()}}
 function tagH(g){return '<span class="tag '+g+'">'+u("t"+g)+'</span>'}
 function mapSvg(){const X=l=>(l-138.5)*118+10,Y=l=>(37.0-l)*135+10,M=D.MAP;
  let s='<svg id="map" viewBox="0 0 300 300" aria-label="Kanto map"><rect width="300" height="300" fill="#183484"/>';
