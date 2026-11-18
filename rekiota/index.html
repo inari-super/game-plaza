@@ -90,24 +90,24 @@ const gb=o=>"data-go='"+JSON.stringify(o).replace(/'/g,"&#39;")+"'";
 function btn(label,o,cls,sub){return '<button class="btn '+(cls||"")+'" '+gb(o)+'><span>'+label+(sub?'<small>'+sub+'</small>':"")+'</span></button>'}
 function mk(h){app.innerHTML=h;fillBind()}
 function rTitle(){
- let h='<div class="win"><h1>レキオタ</h1><div class="sub">歴史手帳をひらいて、京都から旅する。</div><div class="small" style="text-align:center;margin-top:6px">試作版：いまは京都府の章と、閑話休題（歴史手帳）だけです。</div></div>';
+ let h='<div class="win"><h1>レキオタ</h1><div class="sub">歴史手帳をひらいて、京都から旅する。</div><div class="small" style="text-align:center;margin-top:6px">試作版：いまは京都府の章と、歴史手帳だけです。</div></div>';
  if(S.ask){h+='<div class="win msg">はじめからにすると、今の記録（読んだ項目）は消えます。よいですか？</div><div class="row"><button class="btn" id="yes">はい</button><button class="btn" id="no">いいえ</button></div>';mk(h);$("#yes").onclick=()=>{reset();S.ask=false;go({step:"route"})};$("#no").onclick=()=>go({ask:false});return}
  if(S.has)h+=btn("つづきから",{step:"route"},"gold");
  h+='<button class="btn" id="new"><span>はじめから</span></button>';
- h+=btn("閑話休題（歴史手帳）",{step:"kan",ret:{step:"title"}},"","歴代天皇・年号・将軍・首相・官制・中国と朝鮮の国名");
+ h+=btn("歴史手帳",{step:"kan",ret:{step:"title"}},"","歴代天皇・年号・将軍・首相・官制・中国と朝鮮の国名");
  h+=btn("あそびかた・出典について",{step:"help"});
  mk(h);$("#new").onclick=()=>{if(S.has)go({ask:true});else go({step:"route"})}}
-function rHelp(){mk('<div class="win msg">このゲームは、歴史が好きな人のための「歴史手帳」です。県ごとに、旧国名・藩・廃藩置県・県名の由来・城・名産を巡ります。\n\n各項目には出典のタグが付きます。\n・緑「公的」「自治体」：公的機関の出典\n・黄「Wikipedia（要検証）」：Wikipediaだけが出典。まだ公的出典で照合していません\n\n「確認中のメモ」は、運営が気づいた疑問点です。事実と推測は分けて書いています。\n\n日付は、1872年末までは「新暦（旧暦）」の併記を原則にします。\n\n閑話休題のボタンから、歴代天皇などの一覧に飛べます。</div>'+btn("もどる",{step:"title"}))}
+function rHelp(){mk('<div class="win msg">このゲームは、歴史が好きな人のための歴史ゲームです。県ごとに、旧国名・藩・廃藩置県・県名の由来・城・名産を巡ります。\n\n各項目には出典のタグが付きます。\n・緑「公的」「自治体」：公的機関の出典\n・黄「Wikipedia（要検証）」：Wikipediaだけが出典。まだ公的出典で照合していません\n\n「確認中のメモ」は、運営が気づいた疑問点です。事実と推測は分けて書いています。\n\n日付は、1872年末までは「新暦（旧暦）」の併記を原則にします。\n\n歴史手帳のボタンから、歴代天皇などの一覧に飛べます。</div>'+btn("もどる",{step:"title"}))}
 function rRoute(){let h='<div class="win"><div class="nm" style="color:var(--gold)">旅の道</div><div class="small">県ごとの章を巡ります。</div></div>';D.CH.forEach(c=>{const r=S.read[c.id]||{};const n=c.topics.filter(t=>r[t.k]).length;h+=btn(esc(c.title)+'<small>'+esc(c.sub)+'　読んだ '+n+'/'+c.topics.length+'</small>',{step:"hub",c:c.id})});const done=new Set(D.CH.map(c=>c.id));let nx=null;D.PLAN.forEach(g=>g.items.forEach(it=>{if(!nx&&!done.has(it[0]))nx=it}));if(nx)h+='<button class="btn" disabled><span>'+esc(nx[1])+'<small>準備中</small></span></button>';
 h+='<details><summary>旅の予定（五畿七道の順。道の中の順は変わることがあります）</summary><div class="win">'+D.PLAN.map(g=>'<div class="note"><b style="color:var(--gold);font-weight:normal">'+esc(g.dou)+'</b>　'+g.items.map(it=>esc(it[1])+(done.has(it[0])?'（済）':'')).join('・')+'</div>').join("")+'<div class="note">兵庫県は摂津で訪れ、播磨・但馬・淡路は章の中で触れます。全47都道府県。</div></div></details>';
-h+=btn("閑話休題（歴史手帳）",{step:"kan",ret:{step:"route"}},"gold")+btn("タイトルへ",{step:"title"});mk(h)}
+h+=btn("歴史手帳",{step:"kan",ret:{step:"route"}},"gold")+btn("タイトルへ",{step:"title"});mk(h)}
 function rHub(){const K=CH(),r=S.read[K.id]||{};const n=K.topics.filter(t=>r[t.k]).length;
  let h='<div class="win"><div class="nm" style="color:var(--gold)">'+esc(K.title)+'</div><div class="small">'+esc(K.sub)+'</div><div class="small">読んだ：'+n+' / '+K.topics.length+'</div></div>';
  K.topics.forEach(t=>{h+=btn(esc(t.t)+(r[t.k]?' <span class="st">済</span>':""),{step:"topic",c:K.id,k:t.k,ret:{step:"hub",c:K.id}})});
- h+=btn("閑話休題（歴史手帳）",{step:"kan",ret:{step:"hub",c:K.id}},"gold");
+ h+=btn("歴史手帳",{step:"kan",ret:{step:"hub",c:K.id}},"gold");
  h+=btn("旅の道へ",{step:"route"})+btn("タイトルへ",{step:"title"});
  mk(h)}
-function relBtns(rel,from){return rel.map(id=>btn("閑話休題：「"+esc(id==="calendar"?REL.calendar.t:LI[id].t)+"」へ",{step:"list",l:id,ret:from},"sm")).join("")}
+function relBtns(rel,from){return rel.map(id=>btn("歴史手帳：「"+esc(id==="calendar"?REL.calendar.t:LI[id].t)+"」へ",{step:"list",l:id,ret:from},"sm")).join("")}
 function rTopic(){const K=CH(),t=K.topics.find(x=>x.k===S.k);
  (S.read[K.id]=S.read[K.id]||{})[t.k]=1;save();
  const [main,notes]=splitSecs(K[t.k]);
@@ -116,12 +116,12 @@ function rTopic(){const K=CH(),t=K.topics.find(x=>x.k===S.k);
  if(notes.length)h+='<details open><summary>注記・食い違い（出典の記述）</summary><div class="win">'+notes.map(s=>secH(s)).join("")+'</div></details>';
  h+=flagH(K.flags[t.k]);
  const here={step:"topic",c:K.id,k:t.k,ret:S.ret};
- h+='<div class="grp">閑話休題（関連）</div>'+relBtns(t.rel,here)+btn("閑話休題（一覧）",{step:"kan",ret:here},"sm");
+ h+='<div class="grp">歴史手帳（関連）</div>'+relBtns(t.rel,here)+btn("歴史手帳（一覧）",{step:"kan",ret:here},"sm");
  const i=K.topics.findIndex(x=>x.k===t.k),nx=K.topics[i+1];
  h+='<div class="row">'+(nx?'<button class="btn" '+gb({step:"topic",c:K.id,k:nx.k,ret:{step:"hub",c:K.id}})+'><span>つぎ：'+esc(nx.t)+'</span></button>':"")+'<button class="btn" '+gb({step:"hub"})+'><span>章の目次へ</span></button></div>';
  const m=K.meta;h+=metaH(m);
  mk(h)}
-function rKan(){let h='<div class="win"><div class="nm" style="color:var(--gold)">閑話休題</div><div class="small">歴史手帳。ここから、もとの場所にもどれます。</div></div>';
+function rKan(){let h='<div class="win"><div class="nm" style="color:var(--gold)">歴史手帳</div><div class="small">歴代・官制・国名・旧国・藩などの一覧です。ここから、もとの場所にもどれます。</div></div>';
  let g="";D.L.forEach(l=>{if(l.g!==g){g=l.g;h+='<div class="grp">'+esc(g)+'</div>'}h+=btn(esc(l.t),{step:"list",l:l.id,ret:{step:"kan",ret:S.ret}})});
  h+='<div class="grp">読み方</div>'+btn(esc(REL.calendar.t),{step:"list",l:"calendar",ret:{step:"kan",ret:S.ret}});
  h+=btn("もどる",S.ret||{step:"title"},"gold");mk(h)}
