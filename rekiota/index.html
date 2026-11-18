@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>レキオタ | 歴史手帳の旅（試作：京都）</title>
+<title>レキオタ | 47都道府県の今と昔 みんなの歴史手帳</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
 <style>
@@ -90,11 +90,11 @@ const gb=o=>"data-go='"+JSON.stringify(o).replace(/'/g,"&#39;")+"'";
 function btn(label,o,cls,sub){return '<button class="btn '+(cls||"")+'" '+gb(o)+'><span>'+label+(sub?'<small>'+sub+'</small>':"")+'</span></button>'}
 function mk(h){app.innerHTML=h;fillBind()}
 function rTitle(){
- let h='<div class="win"><h1>レキオタ</h1><div class="sub">歴史手帳をひらいて、京都から旅する。</div><div class="small" style="text-align:center;margin-top:6px">試作版：いまは京都府の章と、歴史手帳だけです。</div></div>';
+ let h='<div class="win"><h1>レキオタ</h1><div class="sub">47都道府県の今と昔<br>みんなの歴史手帳</div><div class="small" style="text-align:center;margin-top:6px">試作版：いまは京都府の章と、歴史手帳だけです。</div></div>';
  if(S.ask){h+='<div class="win msg">はじめからにすると、今の記録（読んだ項目）は消えます。よいですか？</div><div class="row"><button class="btn" id="yes">はい</button><button class="btn" id="no">いいえ</button></div>';mk(h);$("#yes").onclick=()=>{reset();S.ask=false;go({step:"route"})};$("#no").onclick=()=>go({ask:false});return}
  if(S.has)h+=btn("つづきから",{step:"route"},"gold");
  h+='<button class="btn" id="new"><span>はじめから</span></button>';
- h+=btn("歴史手帳",{step:"kan",ret:{step:"title"}},"","歴代天皇・年号・将軍・首相・官制・中国と朝鮮の国名");
+ h+=btn("歴史手帳",{step:"kan",ret:{step:"title"}},"","歴代天皇・年号・将軍・首相・大臣・総督、官制、旧国・藩、国名など");
  h+=btn("あそびかた・出典について",{step:"help"});
  mk(h);$("#new").onclick=()=>{if(S.has)go({ask:true});else go({step:"route"})}}
 function rHelp(){mk('<div class="win msg">このゲームは、歴史が好きな人のための歴史ゲームです。県ごとに、旧国名・藩・廃藩置県・県名の由来・城・名産を巡ります。\n\n各項目には出典のタグが付きます。\n・緑「公的」「自治体」：公的機関の出典\n・黄「Wikipedia（要検証）」：Wikipediaだけが出典。まだ公的出典で照合していません\n\n「確認中のメモ」は、運営が気づいた疑問点です。事実と推測は分けて書いています。\n\n日付は、1872年末までは「新暦（旧暦）」の併記を原則にします。\n\n歴史手帳のボタンから、歴代天皇などの一覧に飛べます。</div>'+btn("もどる",{step:"title"}))}
